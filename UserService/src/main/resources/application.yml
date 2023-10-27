@@ -1,0 +1,58 @@
+spring:
+  application:
+    name: USER-SERVICE
+  datasource:
+    url: jdbc:h2:file:~/UserData
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  h2:
+    console:
+      enabled: true
+      path: /h2
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+  config:
+    import: optional:configserver:http://localhost:8086
+server:
+  port: 8082
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoint:
+    health:
+      show-details: always
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      ratingHotelBreaker:
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 10
+        failureRateThreshold: 50
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        slidingWindowType: COUNT_BASED
+  retry:
+    instances:
+      ratingHotelRetry:
+        maxAttempts: 3
+        waitDuration: 2s
+  ratelimiter:
+    instances:
+      hotelratingRatelimiter:
+        limitRefreshPeriod: 4s
+        limitForPeriod: 2
+        timeoutDuration: 0s
+
